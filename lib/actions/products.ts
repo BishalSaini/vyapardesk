@@ -31,7 +31,15 @@ export async function getProducts(params?: {
   }
 
   if (lowStock) {
-    where.currentStock = { lte: prisma.product.fields.minStockLevel };
+    const allMatching = await prisma.product.findMany({
+      where,
+      include: { category: true, supplier: true },
+      orderBy: { name: 'asc' },
+    });
+    const filtered = allMatching.filter((p) => p.currentStock <= p.minStockLevel);
+    const total = filtered.length;
+    const products = filtered.slice((page - 1) * limit, page * limit);
+    return { products, total, pages: Math.ceil(total / limit) };
   }
 
   const [products, total] = await Promise.all([
@@ -158,13 +166,9 @@ export async function searchProductsForBilling(query: string) {
 
 export async function getLowStockProducts() {
   const products = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      currentStock: { lte: prisma.product.fields.minStockLevel },
-    },
+    where: { isActive: true },
     include: { category: true },
     orderBy: { currentStock: 'asc' },
-    take: 10,
   });
-  return products;
+  return products.filter((p) => p.currentStock <= p.minStockLevel).slice(0, 10);
 }
