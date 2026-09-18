@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, SlidersHorizontal, AlertCircle } from 'lucide-react';
 import { adjustStock } from '@/lib/actions/inventory';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface ProductOption {
   id: string;
@@ -164,7 +165,7 @@ export function StockAdjustmentForm({ products }: StockAdjustmentFormProps) {
             disabled={isPending}
             className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
           >
-            <Save className="w-4 h-4" />
+            {isPending ? <LoadingSpinner /> : <Save className="w-4 h-4" />}
             {isPending ? 'Adjusting...' : 'Save Adjustment'}
           </button>
         </div>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Package } from 'lucide-react';
 import { createProduct, updateProduct } from '@/lib/actions/products';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface CategoryOption {
   id: string;
@@ -234,8 +235,10 @@ export function ProductForm({ initialData, categories, suppliers }: ProductFormP
                 step="0.01"
                 min="0"
                 required
-                value={formData.purchasePrice}
-                onChange={(e) => setFormData({ ...formData, purchasePrice: parseFloat(e.target.value) || 0 })}
+                value={formData.purchasePrice === 0 ? '' : formData.purchasePrice}
+                placeholder="0"
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                 className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
@@ -249,8 +252,10 @@ export function ProductForm({ initialData, categories, suppliers }: ProductFormP
                 step="0.01"
                 min="0.01"
                 required
-                value={formData.sellingPrice}
-                onChange={(e) => setFormData({ ...formData, sellingPrice: parseFloat(e.target.value) || 0 })}
+                value={formData.sellingPrice === 0 ? '' : formData.sellingPrice}
+                placeholder="0"
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value === '' ? 0 : parseFloat(e.target.value) || 0 })}
                 className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               {errors.sellingPrice && <p className="text-xs text-red-500 mt-1">{errors.sellingPrice}</p>}
@@ -290,7 +295,7 @@ export function ProductForm({ initialData, categories, suppliers }: ProductFormP
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                 className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
-                <option value="PIECE font-medium">PIECE (Pcs)</option>
+                <option value="PIECE">PIECE (Pcs)</option>
                 <option value="KG">KG (Kilograms)</option>
                 <option value="GRAM">GRAM (Grams)</option>
                 <option value="LITRE">LITRE (Ltr)</option>
@@ -309,8 +314,10 @@ export function ProductForm({ initialData, categories, suppliers }: ProductFormP
                 <input
                   type="number"
                   min="0"
-                  value={formData.currentStock}
-                  onChange={(e) => setFormData({ ...formData, currentStock: parseInt(e.target.value) || 0 })}
+                  value={formData.currentStock === 0 ? '' : formData.currentStock}
+                  placeholder="0"
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => setFormData({ ...formData, currentStock: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                   className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
@@ -323,8 +330,10 @@ export function ProductForm({ initialData, categories, suppliers }: ProductFormP
               <input
                 type="number"
                 min="0"
-                value={formData.minStockLevel}
-                onChange={(e) => setFormData({ ...formData, minStockLevel: parseInt(e.target.value) || 0 })}
+                value={formData.minStockLevel === 0 ? '' : formData.minStockLevel}
+                placeholder="0"
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setFormData({ ...formData, minStockLevel: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
                 className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
@@ -358,7 +367,7 @@ export function ProductForm({ initialData, categories, suppliers }: ProductFormP
             disabled={isPending}
             className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
           >
-            <Save className="w-4 h-4" />
+            {isPending ? <LoadingSpinner /> : <Save className="w-4 h-4" />}
             {isPending ? 'Saving...' : isEditing ? 'Update Product' : 'Create Product'}
           </button>
         </div>

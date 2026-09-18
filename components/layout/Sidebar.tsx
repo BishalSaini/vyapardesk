@@ -103,7 +103,7 @@ export function Sidebar({ userRole, userName, shopName }: SidebarProps) {
   }
 
   return (
-    <aside className="flex flex-col h-full bg-slate-900 text-white border-r border-slate-800 w-64 shrink-0">
+    <aside className="flex flex-col h-full bg-slate-900 text-white border-r border-slate-800 w-64 shrink-0 print:hidden">
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 py-5 border-b border-slate-800">
         <div className="flex items-center justify-center w-9 h-9 bg-blue-600 rounded-lg shrink-0">

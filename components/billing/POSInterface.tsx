@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useRef, useTransition } from 'react';
+import { useState, useEffect, useRef, useTransition, useDeferredValue } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, ShoppingCart, Plus, Minus, Trash2, User, CreditCard, IndianRupee, QrCode, CheckCircle, AlertCircle, Barcode } from 'lucide-react';
+import { Search, ShoppingCart, Plus, Minus, Trash2, User, CreditCard, IndianRupee, QrCode, CheckCircle, AlertCircle, Barcode, Loader2 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { completeSale } from '@/lib/actions/sales';
 import { useToast } from '@/hooks/use-toast';
@@ -46,11 +46,12 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
 
   const [products] = useState(initialProducts);
   const [searchTerm, setSearchTerm] = useState('');
+  const deferredSearchTerm = useDeferredValue(searchTerm);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
   const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'UPI' | 'CARD' | 'CREDIT'>('CASH');
-  const [amountReceived, setAmountReceived] = useState<number>(0);
-  const [overallDiscount, setOverallDiscount] = useState<number>(0);
+  const [amountReceived, setAmountReceived] = useState('');
+  const [overallDiscount, setOverallDiscount] = useState('');
   const [notes, setNotes] = useState('');
 
   const barcodeInputRef = useRef<HTMLInputElement>(null);
@@ -62,9 +63,9 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
 
   // Filter products for grid
   const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.barcode && p.barcode.includes(searchTerm))
+    p.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+    p.sku.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+    (p.barcode && p.barcode.includes(deferredSearchTerm))
   );
 
   // Handle barcode quick scan (exact match enter press)
@@ -145,8 +146,10 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
     const itemTotal = item.quantity * item.unitPrice;
     return acc + (itemTotal * (item.taxPercent / 100));
   }, 0);
-  const finalTotal = Math.max(0, Math.round(itemsSubtotal + taxTotal - overallDiscount));
-  const changeAmount = Math.max(0, amountReceived - finalTotal);
+  const discountValue = Number(overallDiscount) || 0;
+  const amountReceivedValue = Number(amountReceived) || 0;
+  const finalTotal = Math.max(0, Math.round(itemsSubtotal + taxTotal - discountValue));
+  const changeAmount = Math.max(0, amountReceivedValue - finalTotal);
 
   const selectedCustomer = customers.find(c => c.id === selectedCustomerId);
 
@@ -172,16 +175,16 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
             discount: item.discount,
             taxPercent: item.taxPercent,
           })),
-          discount: overallDiscount,
+          discount: discountValue,
           paymentMethod,
-          amountReceived: paymentMethod === 'CASH' ? amountReceived : finalTotal,
+          amountReceived: paymentMethod === 'CASH' ? amountReceivedValue : finalTotal,
           notes,
         };
 
         const res = await completeSale(payload);
 
         if (res.success && res.saleId) {
-          toast({ title: 'Sale Completed! 🎉', description: `Invoice ${res.invoiceNumber} generated` });
+          toast({ title: 'Sale Completed! 🎉', description: `Invoice ${res.invoiceNumber} generated`, variant: 'success' });
           router.push(`/billing/complete/${res.saleId}`);
         } else {
           toast({ title: 'Checkout Failed', description: (res as any).error || 'Failed to complete sale', variant: 'destructive' });
@@ -223,7 +226,7 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
               <button
                 key={product.id}
                 onClick={() => addToCart(product)}
-                disabled={isOut}
+                disabled={isOut || isPending}
                 className={`text-left p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
                   isOut
                     ? 'bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed'
@@ -263,6 +266,7 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
             {cart.length > 0 && (
               <button
                 onClick={() => setCart([])}
+                disabled={isPending}
                 className="text-xs text-rose-500 hover:text-rose-600 font-medium"
               >
                 Clear Cart
@@ -275,6 +279,7 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
             <select
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
+              disabled={isPending}
               className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="">Walk-in Customer (Cash / UPI Sale)</option>
@@ -302,6 +307,7 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => updateQuantity(item.product.id, -1)}
+                  disabled={isPending}
                   className="p-1 rounded bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -309,12 +315,14 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
                 <span className="w-7 text-center font-bold text-xs text-slate-900 dark:text-slate-100">{item.quantity}</span>
                 <button
                   onClick={() => updateQuantity(item.product.id, 1)}
+                  disabled={isPending}
                   className="p-1 rounded bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={() => removeFromCart(item.product.id)}
+                  disabled={isPending}
                   className="p-1 text-slate-400 hover:text-rose-500 ml-1"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -351,9 +359,12 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
               <input
                 type="number"
                 min="0"
+                placeholder="0"
                 value={overallDiscount}
-                onChange={(e) => setOverallDiscount(parseFloat(e.target.value) || 0)}
-                className="w-20 px-2 py-0.5 text-right text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded"
+                onFocus={(e) => e.target.select()}
+                onChange={(e) => setOverallDiscount(e.target.value)}
+                inputMode="decimal"
+                className="w-20 px-2 py-0.5 text-right text-xs bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded font-semibold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
             <div className="flex justify-between text-base font-extrabold text-slate-900 dark:text-slate-100 pt-1 border-t border-slate-200 dark:border-slate-700">
@@ -373,12 +384,13 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
                   key={mode}
                   type="button"
                   onClick={() => setPaymentMethod(mode)}
+                  disabled={isPending}
                   className={`py-1.5 text-xs font-bold rounded-lg border transition-all ${
                     paymentMethod === mode
                       ? mode === 'CREDIT'
-                        ? 'bg-amber-600 text-white border-amber-600'
-                        : 'bg-blue-600 text-white border-blue-600'
-                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                        ? 'bg-amber-600 text-white border-amber-600 shadow-md'
+                        : 'bg-blue-600 text-white border-blue-600 shadow-md'
+                      : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   {mode === 'CREDIT' ? 'Udhar' : mode}
@@ -397,8 +409,10 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
                   min="0"
                   placeholder="0"
                   value={amountReceived}
-                  onChange={(e) => setAmountReceived(parseFloat(e.target.value) || 0)}
-                  className="w-full px-2 py-1 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded font-bold text-slate-900 dark:text-slate-100"
+                  onFocus={(e) => e.target.select()}
+                  onChange={(e) => setAmountReceived(e.target.value)}
+                  inputMode="decimal"
+                  className="w-full px-2 py-1 text-sm bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
               <div className="text-right">
@@ -414,9 +428,10 @@ export function POSInterface({ products: initialProducts, customers }: POSInterf
           <button
             onClick={handleCheckout}
             disabled={isPending || cart.length === 0}
+            aria-busy={isPending}
             className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-sm rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2"
           >
-            <CheckCircle className="w-5 h-5" />
+            {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle className="w-5 h-5" />}
             {isPending ? 'Processing Sale...' : `Complete Sale (${formatCurrency(finalTotal)})`}
           </button>
         </div>

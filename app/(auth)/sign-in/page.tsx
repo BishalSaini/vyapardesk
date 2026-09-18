@@ -8,6 +8,7 @@ import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -90,6 +91,7 @@ export default function SignInPage() {
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-11"
               disabled={isLoading}
             >
+              {isLoading && <LoadingSpinner />}
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>

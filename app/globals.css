@@ -46,3 +46,30 @@
     --ring: 224.3 76.3% 48%;
   }
 }
+
+@media print {
+  aside, header, nav, .print\:hidden {
+    display: none !important;
+  }
+  body, main {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+  }
+  @page {
+    margin: 8mm;
+    size: auto;
+  }
+}
+
+/* Hide ugly default browser spin buttons for clean number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}

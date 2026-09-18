@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Save, Store, Receipt, Phone, Mail, MapPin } from 'lucide-react';
 import { updateShopSettings } from '@/lib/actions/settings';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface ShopSettingsData {
   id: string;
@@ -191,7 +192,7 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
             disabled={isPending}
             className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
           >
-            <Save className="w-4 h-4" />
+            {isPending ? <LoadingSpinner /> : <Save className="w-4 h-4" />}
             {isPending ? 'Saving...' : 'Save Settings'}
           </button>
         </div>

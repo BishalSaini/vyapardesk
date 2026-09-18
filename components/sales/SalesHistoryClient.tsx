@@ -7,6 +7,7 @@ import { Search, Eye, XCircle, FileText, Calendar, IndianRupee } from 'lucide-re
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { cancelSale } from '@/lib/actions/sales';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface SaleItem {
   id: string;
@@ -231,6 +232,7 @@ export function SalesHistoryClient({ sales: initialSales, isAdmin }: SalesHistor
                   disabled={isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-rose-600 hover:bg-rose-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
                 >
+                  {isPending && <LoadingSpinner />}
                   {isPending ? 'Cancelling...' : 'Confirm Cancellation'}
                 </button>
               </div>

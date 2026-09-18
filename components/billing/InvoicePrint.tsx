@@ -35,6 +35,7 @@ interface InvoiceSale {
       name: string;
       unit: string;
       sku: string;
+      taxPercent?: number | string | any;
     };
   }>;
   payments?: Array<{
@@ -101,11 +102,11 @@ export function InvoicePrint({ sale, shopSettings }: InvoicePrintProps) {
             <p className="text-xs text-slate-600 max-w-xs mt-0.5">{shopAddress}</p>
             <p className="text-xs text-slate-600">Ph: {shopPhone} {gstin ? `| GSTIN: ${gstin}` : ''}</p>
           </div>
-          <div className="text-right">
-            <span className="inline-block px-3 py-1 bg-slate-900 text-white text-xs font-bold rounded uppercase tracking-wider mb-1">
+          <div className="text-right shrink-0">
+            <span className="inline-block px-3 py-1 bg-slate-900 text-white text-[11px] font-bold rounded uppercase tracking-wider mb-1">
               TAX INVOICE
             </span>
-            <p className="font-mono font-bold text-sm text-slate-900">{sale.invoiceNumber}</p>
+            <p className="font-mono font-bold text-sm text-slate-900 whitespace-nowrap">{sale.invoiceNumber}</p>
             <p className="text-xs text-slate-500">{formatDate(sale.createdAt)}</p>
           </div>
         </div>
@@ -138,15 +139,18 @@ export function InvoicePrint({ sale, shopSettings }: InvoicePrintProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {sale.items.map((item) => (
-              <tr key={item.id}>
-                <td className="py-2.5 font-semibold text-slate-900">{item.product.name}</td>
-                <td className="py-2.5 text-center font-bold">{item.quantity} {item.product.unit}</td>
-                <td className="py-2.5 text-right">{formatCurrency(item.unitPrice)}</td>
-                <td className="py-2.5 text-right text-slate-500">{Number(item.taxPercent)}%</td>
-                <td className="py-2.5 text-right font-bold text-slate-900">{formatCurrency(item.total)}</td>
-              </tr>
-            ))}
+            {sale.items.map((item) => {
+              const taxPct = Number(item.taxPercent ?? item.product?.taxPercent ?? 0);
+              return (
+                <tr key={item.id}>
+                  <td className="py-2.5 font-semibold text-slate-900">{item.product.name}</td>
+                  <td className="py-2.5 text-center font-bold">{item.quantity} {item.product.unit}</td>
+                  <td className="py-2.5 text-right">{formatCurrency(item.unitPrice)}</td>
+                  <td className="py-2.5 text-right text-slate-500">{isNaN(taxPct) ? '0' : taxPct}%</td>
+                  <td className="py-2.5 text-right font-bold text-slate-900">{formatCurrency(item.total)}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 
@@ -166,7 +170,7 @@ export function InvoicePrint({ sale, shopSettings }: InvoicePrintProps) {
             )}
 
             {Number(sale.discount) > 0 && (
-              <div className="flex justify-between text-emerald-600">
+              <div className="flex justify-between text-emerald-600 font-medium">
                 <span>Discount:</span>
                 <span>-{formatCurrency(sale.discount)}</span>
               </div>
@@ -178,7 +182,7 @@ export function InvoicePrint({ sale, shopSettings }: InvoicePrintProps) {
             </div>
 
             {sale.paymentMethod === 'CASH' && Number(sale.amountReceived) > 0 && (
-              <div className="pt-2 text-[11px] text-slate-500 border-t border-dashed">
+              <div className="pt-2 text-[11px] text-slate-500 border-t border-dashed space-y-0.5">
                 <div className="flex justify-between">
                   <span>Cash Received:</span>
                   <span>{formatCurrency(sale.amountReceived)}</span>

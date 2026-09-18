@@ -10,7 +10,7 @@ interface TopNavProps {
 
 export function TopNav({ shopName }: TopNavProps) {
   return (
-    <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+    <header className="h-14 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0 print:hidden">
       <div className="flex items-center gap-3">
         <h2 className="text-slate-800 font-semibold text-sm hidden md:block">{shopName}</h2>
       </div>

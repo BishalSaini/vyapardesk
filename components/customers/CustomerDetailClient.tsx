@@ -7,6 +7,7 @@ import { ArrowLeft, Phone, Mail, MapPin, IndianRupee, FileText, Plus, CheckCircl
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { recordCustomerPayment } from '@/lib/actions/customers';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface CustomerDetail {
   id: string;
@@ -272,6 +273,7 @@ export function CustomerDetailClient({ customer }: CustomerDetailClientProps) {
                   disabled={isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
                 >
+                  {isPending && <LoadingSpinner />}
                   {isPending ? 'Processing...' : 'Record Payment'}
                 </button>
               </div>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Save, Truck } from 'lucide-react';
 import { createSupplier } from '@/lib/actions/suppliers';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 export function SupplierForm() {
   const router = useRouter();
@@ -153,7 +154,7 @@ export function SupplierForm() {
             disabled={isPending}
             className="inline-flex items-center gap-2 px-5 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
           >
-            <Save className="w-4 h-4" />
+            {isPending ? <LoadingSpinner /> : <Save className="w-4 h-4" />}
             {isPending ? 'Saving...' : 'Add Supplier'}
           </button>
         </div>

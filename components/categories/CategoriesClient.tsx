@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, Edit2, Trash2, Tag, Search } from 'lucide-react';
 import { createCategory, updateCategory, toggleCategoryStatus } from '@/lib/actions/categories';
 import { useToast } from '@/hooks/use-toast';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
 
 interface CategoryItem {
   id: string;
@@ -246,6 +247,7 @@ export function CategoriesClient({ categories: initialCategories, isAdmin }: Cat
                   disabled={isPending}
                   className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
                 >
+                  {isPending && <LoadingSpinner />}
                   {isPending ? 'Saving...' : editingCategory ? 'Save Changes' : 'Create Category'}
                 </button>
               </div>
