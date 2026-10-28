@@ -2,7 +2,7 @@
 
 VyaparDesk is a complete, production-grade Inventory & Billing Management application built for small local businesses, retailers, wholesalers, and vendors in India.
 
-## Key Features
+## Key Feature
 
 - 📊 **Executive Dashboard**: Real-time sales summary, daily bill count, low stock warnings, outstanding customer credit (Udhar), and Recharts revenue trend graph.
 - ⚡ **POS Billing Interface**: Built for fast billing with barcode scanner support, live product search, cart management, GST tax calculations, discounts, payment modes (Cash, UPI, Card, Udhar), and cash change calculation.
